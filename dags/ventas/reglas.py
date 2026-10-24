@@ -17,6 +17,12 @@ REGIONES = {"norte", "sur", "centro"}
 # Si se rechaza más del 20 % de un archivo no se carga nada de ese día
 UMBRAL_RECHAZO = 0.20
 
+# Solo dígitos: descarta "+3", "1_000", "1.5" o "dos", que int() sí aceptaría.
+# Se usa [0-9] y no \d porque \d también acepta dígitos Unicode como "٣".
+RE_ENTERO = re.compile(r"[0-9]+")
+# Dígitos con punto decimal opcional: descarta "45,50", "5.", "1e3" o "nan"
+RE_PRECIO = re.compile(r"[0-9]+(\.[0-9]+)?")
+
 
 def leer_csv(ruta):
     """Lee el archivo y devuelve una lista de diccionarios con los valores en texto.
@@ -60,7 +66,45 @@ def validar_fila(fila, fecha):
     Pista: int() y float() aceptan cosas como "+3", "1_000", "1e3" o "nan".
     Con re.fullmatch puedes exigir que el texto tenga solo dígitos.
     """
-    raise NotImplementedError("Completa validar_fila")
+    # Columnas de más quedan en "_sobrantes"; columnas de menos quedan en None
+    if fila.get("_sobrantes") or any(fila.get(col) is None for col in COLUMNAS):
+        return None, "columnas_incorrectas"
+
+    id_venta = _texto(fila, "id_venta")
+    if not RE_ENTERO.fullmatch(id_venta) or int(id_venta) <= 0:
+        return None, "id_invalido"
+
+    if _texto(fila, "fecha") != fecha:
+        return None, "fecha_distinta"
+
+    region = _texto(fila, "region").lower()
+    if region not in REGIONES:
+        return None, "region_invalida"
+
+    producto = _texto(fila, "producto")
+    if not producto:
+        return None, "producto_vacio"
+
+    cantidad = _texto(fila, "cantidad")
+    if not RE_ENTERO.fullmatch(cantidad) or int(cantidad) <= 0:
+        return None, "cantidad_invalida"
+
+    precio = _texto(fila, "precio_unitario")
+    if not RE_PRECIO.fullmatch(precio) or round(float(precio), 2) <= 0:
+        return None, "precio_invalido"
+
+    cantidad = int(cantidad)
+    precio = round(float(precio), 2)
+    registro = {
+        "id_venta": int(id_venta),
+        "fecha": fecha,
+        "region": region.capitalize(),
+        "producto": producto.capitalize(),
+        "cantidad": cantidad,
+        "precio_unitario": precio,
+        "total": round(cantidad * precio, 2),
+    }
+    return registro, None
 
 
 def separar_ventas(filas, fecha):
@@ -76,7 +120,30 @@ def separar_ventas(filas, fecha):
       línea 2 porque la 1 es el encabezado), id_venta (texto o None), motivo y
       fila_original (la fila como JSON, usa json.dumps(fila, ensure_ascii=False)).
     """
-    raise NotImplementedError("Completa separar_ventas")
+    limpias, rechazadas = [], []
+    ids_vistos = set()
+
+    for linea, fila in enumerate(filas, start=2):
+        registro, motivo = validar_fila(fila, fecha)
+
+        if motivo not in ("columnas_incorrectas", "id_invalido"):
+            # El id es válido: se compara como número contra los anteriores
+            id_numero = int(_texto(fila, "id_venta"))
+            if id_numero in ids_vistos:
+                registro, motivo = None, "id_duplicado"
+            ids_vistos.add(id_numero)
+
+        if motivo is None:
+            limpias.append(registro)
+        else:
+            rechazadas.append({
+                "linea": linea,
+                "id_venta": _texto(fila, "id_venta") or None,
+                "motivo": motivo,
+                "fila_original": json.dumps(fila, ensure_ascii=False),
+            })
+
+    return limpias, rechazadas
 
 
 def revisar_calidad(total_leidas, total_rechazadas, umbral=UMBRAL_RECHAZO):
@@ -84,4 +151,13 @@ def revisar_calidad(total_leidas, total_rechazadas, umbral=UMBRAL_RECHAZO):
 
     Lanza ValueError si el archivo no trae filas o si la tasa supera el umbral.
     """
-    raise NotImplementedError("Completa revisar_calidad")
+    if total_leidas <= 0:
+        raise ValueError("El archivo no trae filas de datos")
+
+    tasa = total_rechazadas / total_leidas
+    if tasa > umbral:
+        raise ValueError(
+            f"Se rechazó el {tasa:.1%} de las filas ({total_rechazadas} de {total_leidas}); "
+            f"el máximo permitido es {umbral:.0%}. No se carga nada de este archivo."
+        )
+    return tasa
