@@ -90,7 +90,7 @@ def validar_fila(fila, fecha):
         return None, "cantidad_invalida"
 
     precio = _texto(fila, "precio_unitario")
-    if not RE_PRECIO.fullmatch(precio) or round(float(precio), 2) <= 0:
+    if not RE_PRECIO.fullmatch(precio) or round(float(precio), 2) < 0:
         return None, "precio_invalido"
 
     cantidad = int(cantidad)
