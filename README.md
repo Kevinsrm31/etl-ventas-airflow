@@ -188,7 +188,10 @@ El workflow [`ci.yml`](.github/workflows/ci.yml) corre en cada push a `main` y
 en cada pull request hacia `main`: instala Python 3.12, las dependencias de
 `requirements-dev.txt` con las constraints de Airflow y ejecuta `pytest`.
 
-Pull request de prueba (precio cero aceptado → CI en rojo → revertido → CI en verde): _pendiente_
+**Pull request de prueba:** [#1 — Acepta precio unitario igual a cero](https://github.com/Kevinsrm31/etl-ventas-airflow/pull/1).
+La rama `feature/precio-cero` cambió la regla del precio para aceptar 0; el CI
+quedó en rojo señalando `test_precio_invalido[0]`, `[0.00]` y `[0.004]`. Tras
+revertir el cambio en la misma rama pasó a verde y se hizo el merge.
 
 ## Tecnologías
 
