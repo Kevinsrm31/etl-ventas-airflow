@@ -143,7 +143,17 @@ Tras las cinco corridas (incluida la repetición del 5 de octubre),
 `resumen_ventas_diario` tiene **9 filas** (3 fechas × 3 regiones). La salida
 completa está en [`evidencias/verificacion.txt`](evidencias/verificacion.txt).
 
-![Panel de Airflow tras las cinco corridas: 4 exitosas y 1 fallida](evidencias/airflow_inicio_salud_y_corridas.png)
+![Lista de corridas del DAG en Airflow](evidencias/airflow_lista_de_corridas.png)
+
+Las cinco corridas de la parte 4 son las de abajo (`manual__2026-10-05__…` a
+`manual__2026-10-05__144937`), incluida la del 7 de octubre que falla en
+`validar_calidad`. Las dos de arriba son disparos adicionales desde la
+interfaz con la fecha por defecto (2026-10-05): después de procesar ese día
+tres veces, `ventas_limpias` sigue con 126 filas sin ids repetidos.
+
+Otras capturas en [`evidencias/`](evidencias/): el formulario de Trigger con
+el parámetro `fecha`, el detalle de una corrida con sus cinco tareas y el
+panel de inicio de Airflow.
 
 ## Preguntas
 
