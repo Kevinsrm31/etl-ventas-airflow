@@ -8,6 +8,8 @@ ventas de una fecha, separa las filas válidas de las que tienen problemas
 deja el resultado en **PostgreSQL** de forma idempotente. Cada cambio pasa por
 pruebas automáticas en **GitHub Actions** antes de llegar a `main`.
 
+📝 Artículo en Medium: [Pipeline ETL de ventas con Airflow, pruebas y CI: validar antes de cargar](https://medium.com/@kevinsrm19/pipeline-etl-de-ventas-con-airflow-pruebas-y-ci-validar-antes-de-cargar-759e2e20d627)
+
 ## Caso de uso
 
 Una cadena de tiendas de tecnología con locales en tres regiones (norte, sur y
@@ -140,6 +142,8 @@ Tras las cinco corridas (incluida la repetición del 5 de octubre),
 `ventas_limpias` tiene **126 filas sin ids repetidos** y
 `resumen_ventas_diario` tiene **9 filas** (3 fechas × 3 regiones). La salida
 completa está en [`evidencias/verificacion.txt`](evidencias/verificacion.txt).
+
+![Panel de Airflow tras las cinco corridas: 4 exitosas y 1 fallida](evidencias/airflow_inicio_salud_y_corridas.png)
 
 ## Preguntas
 
