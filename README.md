@@ -207,6 +207,8 @@ La rama `feature/precio-cero` cambió la regla del precio para aceptar 0; el CI
 quedó en rojo señalando `test_precio_invalido[0]`, `[0.00]` y `[0.004]`. Tras
 revertir el cambio en la misma rama pasó a verde y se hizo el merge.
 
+![Pestaña Actions: la corrida del PR en rojo (CI #2) y luego en verde (CI #3)](evidencias/github_actions_rojo_y_verde.png)
+
 ## Tecnologías
 
 Apache Airflow 3.3.2 (TaskFlow API) · PostgreSQL 16 · Python 3.12 · pytest ·
